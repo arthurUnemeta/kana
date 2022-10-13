@@ -33,8 +33,8 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
     );
     uint48 public constant MAX_SUPPLY = 6666;
     uint48 public constant MAX_FREE_SUPPLY = 2000;
-    uint256 public  PUBLIC_PRICE = 0.08 ether;
-    uint256 public  ALLOW_LIST_PRICE = 0.1 ether;
+    uint256 public  PUBLIC_PRICE = 0.1 ether;
+    uint256 public  ALLOW_LIST_PRICE = 0.08 ether;
     uint48 public Supply = 0;
     mapping(address => bool) public FreelistClaimed;
     uint48 public constant SECTION_BITMASK = 15;
