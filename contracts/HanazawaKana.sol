@@ -41,6 +41,9 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
     uint48 public constant DISTRICT_BITMASK = 4095;
     uint8 public PUBLIC_SUPPLY =3;
     uint8 public SALES_PHASE = 8;
+    uint8 public PUBLIC_SAlES =1;
+    uint8 public WL_SALES =2;
+    uint8 public FREE_SALES =4;
     string public metadataURI;
     bytes32 private _merkleRoot;
     constructor() ERC721A("HanazawaKanaNFT", "KANA") {}
@@ -63,7 +66,7 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
         CallerIsUser
     {
         uint48 amountAllowed = (_inputConfig >> 16) & SECTION_BITMASK;
-        uint48 userSalesPhase = _inputConfig >> 20;
+        uint48 userSalesPhase = (_inputConfig >> 24) & SECTION_BITMASK;
         uint48 Amount = _inputConfig & DISTRICT_BITMASK;
         if (Amount == 0) revert InvalidMintAmount();
         if (Supply+Amount > MAX_FREE_SUPPLY) revert MintAmountFreeExceedsSupply();
@@ -71,6 +74,7 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender,amountAllowed,userSalesPhase));
         if (!MerkleProof.verifyCalldata(_proof, _merkleRoot, leaf)) revert InvalidMerkleProof();
         if (userSalesPhase != SALES_PHASE) revert WrongSalesPhase();
+        if (SALES_PHASE != FREE_SALES) revert WrongSalesPhase();
  
         uint64 userAux = _getAux(msg.sender);
         uint64 allowlistMinted = (userAux >> 8) & SECTION_BITMASK;
@@ -90,14 +94,15 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
         CallerIsUser
     {
         uint48 amountAllowed = (_inputConfig >> 16) & SECTION_BITMASK;
-        uint48 userSalesPhase = _inputConfig >> 20;
+        uint48 userSalesPhase = (_inputConfig >> 24) & SECTION_BITMASK;
         uint48 Amount = _inputConfig & DISTRICT_BITMASK;
         if (Amount == 0) revert InvalidMintAmount();
         if (Supply+Amount > MAX_SUPPLY) revert MintAmountExceedsSupply();
-
+      
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amountAllowed,userSalesPhase));
         if (!MerkleProof.verifyCalldata(_proof, _merkleRoot, leaf)) revert InvalidMerkleProof();
         if (userSalesPhase != SALES_PHASE) revert WrongSalesPhase();
+        if (SALES_PHASE != WL_SALES) revert WrongSalesPhase();
 
         uint64 userAux = _getAux(msg.sender);
         uint64 allowlistMinted = (userAux >> 4) & SECTION_BITMASK;
@@ -119,7 +124,7 @@ contract HanazawaKanaNFT is ERC721A, Ownable {
         CallerIsUser
         mintPublic(_mintAmount)
     {
-        if (SALES_PHASE != 1) revert WrongSalesPhase();
+        if (SALES_PHASE != PUBLIC_SAlES) revert WrongSalesPhase();
         if (_mintAmount == 0) revert InvalidMintAmount();
 
         uint64 userAux = _getAux(msg.sender);
